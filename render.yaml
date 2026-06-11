@@ -1,0 +1,44 @@
+databases:
+  - name: talentscan-db
+    plan: free
+    databaseName: cv_analyzer
+    user: talentscan
+
+services:
+  - type: web
+    name: talentscan-ia
+    runtime: python
+    plan: free
+    rootDir: Documents/tesis/cv_analyzer
+    buildCommand: bash deploy/render_build.sh
+    startCommand: bash deploy/render_start.sh
+    healthCheckPath: /healthz/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+      - key: CSRF_COOKIE_SECURE
+        value: "True"
+      - key: ALLOW_PUBLIC_REGISTRATION
+        value: "False"
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: "False"
+      - key: GUNICORN_WORKERS
+        value: "2"
+      - key: GUNICORN_TIMEOUT
+        value: "120"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: talentscan-db
+          property: connectionString
