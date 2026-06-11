@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial comparativo - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .hero-header {
+        background: linear-gradient(135deg, #0f172a, #2563eb);
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+    }
+
+    .glass-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .modern-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        border: none;
+    }
+
+    .modern-table td {
+        vertical-align: middle;
+        border-color: #f1f5f9;
+    }
+
+    .query-preview {
+        max-width: 420px;
+        line-height: 1.4;
+    }
+
+    .metric-badge {
+        background: #dbeafe;
+        color: #1d4ed8;
+        padding: .45rem .8rem;
+        border-radius: 999px;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        background: white;
+        border-radius: 24px;
+        padding: 4rem 2rem;
+        text-align: center;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .action-btn {
+        border-radius: 10px;
+    }
+</style>
+
+<div class="hero-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h2 class="mb-2">
+            <i class="fas fa-clock-rotate-left me-2"></i>Historial comparativo
+        </h2>
+        <p class="mb-0 opacity-75">
+            Consultas históricas realizadas sobre análisis automatizados de perfiles
+        </p>
+    </div>
+
+    <a href="{% url 'bulk_analysis' %}" class="btn btn-light">
+        <i class="fas fa-plus me-1"></i>Nueva comparativa
+    </a>
+</div>
+
+{% if page_obj %}
+
+<div class="card glass-card">
+    <div class="card-header bg-white border-0 py-3 px-4">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-chart-line me-2 text-primary"></i>
+            Comparativas registradas
+            <span class="metric-badge ms-2">{{ total_queries }}</span>
+        </h5>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table modern-table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Consulta</th>
+                        <th>Perfiles</th>
+                        <th>Tiempo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for query in page_obj %}
+                    <tr>
+                        <td>
+                            <div>
+                                <strong>{{ query.created_at|date:"d/m/Y" }}</strong><br>
+                                <small class="text-muted">{{ query.created_at|date:"H:i" }}</small>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="query-preview">
+                                {{ query.get_short_query }}
+                            </div>
+
+                            {% if query.query|length > 100 %}
+                            <button class="btn btn-link btn-sm p-0 mt-1"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#query-{{ query.id }}">
+                                Ver consulta completa
+                            </button>
+
+                            <div class="collapse mt-2" id="query-{{ query.id }}">
+                                <div class="p-3 bg-light rounded">
+                                    {{ query.query }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="metric-badge">{{ query.get_cvs_count }}</span>
+                        </td>
+
+                        <td>
+                            {% if query.processing_time %}
+                                <span class="text-muted">{{ query.processing_time|floatformat:1 }} seg</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'bulk_analysis_detail' query.id %}"
+                                   class="btn btn-outline-primary btn-sm action-btn"
+                                   title="Ver resultado">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+
+                                <button type="button"
+                                        class="btn btn-outline-secondary btn-sm action-btn"
+                                        onclick="repeatQuery('{{ query.query|escapejs }}')"
+                                        title="Repetir análisis">
+                                    <i class="fas fa-rotate-right"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="mt-4">
+    <nav>
+        <ul class="pagination justify-content-center">
+
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">Primera</a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+            </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+{% else %}
+
+<div class="empty-state">
+    <i class="fas fa-brain fa-5x text-primary mb-4"></i>
+
+    <h3 class="text-muted mb-3">
+        Todavía no hay comparativas registradas
+    </h3>
+
+    <p class="text-muted mb-4">
+        Ejecutá tu primera evaluación comparativa con inteligencia artificial sobre múltiples perfiles.
+    </p>
+
+    <a href="{% url 'bulk_analysis' %}" class="btn btn-primary btn-lg rounded-pill px-4">
+        <i class="fas fa-plus me-2"></i>Crear primera comparativa
+    </a>
+</div>
+
+{% endif %}
+
+<script>
+function repeatQuery(queryText) {
+    const url = new URL('{% url "bulk_analysis" %}', window.location.origin);
+    url.searchParams.set('query', queryText);
+    window.location.href = url.toString();
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial de análisis - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .history-hero {
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-stat {
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 18px;
+        min-width: 190px;
+        padding: 1rem;
+    }
+
+    .hero-stat small {
+        color: rgba(255, 255, 255, .72);
+        display: block;
+        font-weight: 700;
+        margin-bottom: .25rem;
+        text-transform: uppercase;
+    }
+
+    .hero-stat strong {
+        display: block;
+        font-size: 1.9rem;
+        line-height: 1;
+    }
+
+    .history-card {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+
+    .history-card + .history-card {
+        margin-top: 1rem;
+    }
+
+    .history-card-header {
+        align-items: center;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        gap: .9rem;
+        justify-content: space-between;
+        padding: 1rem 1.15rem;
+    }
+
+    .candidate-chip {
+        align-items: center;
+        display: flex;
+        gap: .75rem;
+        min-width: 0;
+    }
+
+    .candidate-icon {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 14px;
+        color: #2563eb;
+        display: flex;
+        flex: 0 0 auto;
+        height: 44px;
+        justify-content: center;
+        width: 44px;
+    }
+
+    .candidate-chip strong {
+        color: #0f172a;
+        display: block;
+        line-height: 1.2;
+    }
+
+    .query-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1rem;
+    }
+
+    .response-box {
+        background: #eff6ff;
+        border-left: 5px solid #2563eb;
+        border-radius: 14px;
+        padding: 1rem;
+    }
+
+    .box-label {
+        color: #2563eb;
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .04rem;
+        margin-bottom: .45rem;
+        text-transform: uppercase;
+    }
+
+    .empty-state {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 4rem 2rem;
+        text-align: center;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .empty-icon {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 24px;
+        color: #2563eb;
+        display: inline-flex;
+        font-size: 2.4rem;
+        height: 86px;
+        justify-content: center;
+        margin-bottom: 1.25rem;
+        width: 86px;
+    }
+
+    @media (max-width: 767.98px) {
+        .history-card-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .hero-stat {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="hero-box history-hero d-flex justify-content-between align-items-center flex-wrap gap-4">
+    <div>
+        <h2 class="mb-2">
+            <i class="fas fa-clock-rotate-left me-2"></i>Historial de análisis
+        </h2>
+        <p class="mb-0 opacity-75">
+            Registro de consultas individuales realizadas sobre perfiles profesionales.
+        </p>
+    </div>
+
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div class="hero-stat">
+            <small>Consultas</small>
+            <strong>{{ total_queries }}</strong>
+            <span class="opacity-75 small">registradas</span>
+        </div>
+
+        <a href="{% url 'cv_list' %}" class="btn btn-light">
+            <i class="fas fa-users me-1"></i>Ver perfiles
+        </a>
+    </div>
+</div>
+
+{% if page_obj %}
+<div>
+    {% for query in page_obj %}
+    <div class="card history-card">
+        <div class="history-card-header">
+            <div class="candidate-chip">
+                <div class="candidate-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div>
+                    <strong>{{ query.cv.candidate_name }}</strong>
+                    <small class="text-muted">{{ query.created_at|date:"d/m/Y H:i" }}</small>
+                </div>
+            </div>
+
+            <a href="{% url 'cv_detail' query.cv.id %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-eye me-1"></i>Ver perfil
+            </a>
+        </div>
+
+        <div class="card-body">
+            <div class="query-box mb-3">
+                <div class="box-label">
+                    <i class="fas fa-message me-1"></i>Consulta realizada
+                </div>
+                <p class="mb-0">{{ query.query }}</p>
+            </div>
+
+            <div class="response-box">
+                <div class="box-label">
+                    <i class="fas fa-brain me-1"></i>Respuesta IA
+                </div>
+                <div class="text-muted">{{ query.response|linebreaks }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav aria-label="Paginación de análisis" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">&laquo; Primera</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+            </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <h4 class="text-muted mb-3">Todavía no hay análisis registrados</h4>
+    <p class="text-muted mb-4">Cargá un perfil profesional y realizá tu primera consulta asistida por IA.</p>
+
+    <a href="{% url 'cv_upload' %}" class="btn btn-primary btn-lg px-4">
+        <i class="fas fa-cloud-arrow-up me-2"></i>Cargar primer perfil
+    </a>
+</div>
+{% endif %}
+{% endblock %}

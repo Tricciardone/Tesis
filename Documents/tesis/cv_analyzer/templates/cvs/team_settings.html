@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Equipo y roles - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .team-hero {
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .member-card,
+    .team-panel {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+    }
+
+    .role-pill {
+        background: #eff6ff;
+        border-radius: 999px;
+        color: #1d4ed8;
+        display: inline-flex;
+        font-size: .78rem;
+        font-weight: 800;
+        padding: .42rem .68rem;
+    }
+</style>
+
+<div class="hero-box team-hero">
+    <h2 class="mb-2">
+        <i class="fas fa-user-shield me-2"></i>Equipo y roles
+    </h2>
+    <p class="mb-0 opacity-75">
+        {{ organization.name }} · los perfiles se comparten solo dentro de esta organización.
+    </p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card team-panel">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-3">Agregar usuario existente</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="usuario" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Rol</label>
+                        <select name="role" class="form-select">
+                            {% for value, label in roles %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-1"></i>Asignar al equipo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="row g-3">
+            {% for member in members %}
+            <div class="col-md-6">
+                <div class="card member-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between gap-3">
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ member.user.get_full_name|default:member.user.username }}</h5>
+                                <small class="text-muted">@{{ member.user.username }}</small>
+                            </div>
+                            <span class="role-pill">{{ member.get_role_display }}</span>
+                        </div>
+                        <small class="text-muted d-block mt-3 mb-3">
+                            Alta: {{ member.created_at|date:"d/m/Y H:i" }}
+                        </small>
+
+                        {% if member.user.id != user.id %}
+                        <form method="post" class="d-flex gap-2 align-items-center mb-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_role">
+                            <input type="hidden" name="profile_id" value="{{ member.id }}">
+                            <select name="role" class="form-select form-select-sm">
+                                {% for value, label in roles %}
+                                    <option value="{{ value }}" {% if member.role == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </form>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove">
+                            <input type="hidden" name="profile_id" value="{{ member.id }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="fas fa-user-minus me-1"></i>Quitar del equipo
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="text-muted small">
+                            Tu propio rol no se modifica desde esta vista.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="card member-card">
+                    <div class="card-body text-muted">No hay miembros cargados.</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

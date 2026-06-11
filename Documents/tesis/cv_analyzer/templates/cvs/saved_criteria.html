@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Criterios guardados - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .criteria-hero {
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-stat {
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 18px;
+        min-width: 160px;
+        padding: 1rem;
+    }
+
+    .hero-stat small {
+        color: rgba(255, 255, 255, .72);
+        display: block;
+        font-weight: 700;
+        margin-bottom: .25rem;
+        text-transform: uppercase;
+    }
+
+    .hero-stat strong {
+        display: block;
+        font-size: 1.8rem;
+        line-height: 1;
+    }
+
+    .criterion-card {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .criterion-type {
+        background: #eff6ff;
+        border-radius: 999px;
+        color: #1d4ed8;
+        display: inline-flex;
+        font-size: .76rem;
+        font-weight: 800;
+        padding: .4rem .65rem;
+    }
+
+    .criterion-preview {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        color: #475569;
+        line-height: 1.55;
+        min-height: 110px;
+        padding: .85rem;
+    }
+
+    .empty-state {
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+</style>
+
+<div class="hero-box criteria-hero d-flex justify-content-between align-items-center flex-wrap gap-4">
+    <div>
+        <h2 class="mb-2">
+            <i class="fas fa-bookmark me-2"></i>Biblioteca de criterios
+        </h2>
+        <p class="mb-0 opacity-75">
+            Guardá búsquedas, criterios comparativos y descripciones de puesto reutilizables.
+        </p>
+    </div>
+
+    <div class="d-flex gap-3 flex-wrap">
+        <div class="hero-stat">
+            <small>Matching</small>
+            <strong>{{ grouped_counts.job_match }}</strong>
+        </div>
+        <div class="hero-stat">
+            <small>Comparativa</small>
+            <strong>{{ grouped_counts.bulk_analysis }}</strong>
+        </div>
+        <div class="hero-stat">
+            <small>Búsqueda</small>
+            <strong>{{ grouped_counts.search }}</strong>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-5">
+        <div class="card glass-card">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-plus me-2 text-primary"></i>Nuevo criterio
+                </h4>
+                {% crispy form %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-7">
+        {% if criteria %}
+        <div class="row g-3">
+            {% for criterion in criteria %}
+            <div class="col-md-6">
+                <div class="card criterion-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ criterion.name }}</h5>
+                                <span class="criterion-type">{{ criterion.get_criterion_type_display }}</span>
+                            </div>
+                        </div>
+
+                        <div class="criterion-preview mb-3">
+                            {{ criterion.get_short_content }}
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if criterion.criterion_type == 'job_match' %}
+                                <a href="{% url 'job_match' %}?criterion={{ criterion.id }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-bullseye me-1"></i>Usar en matching
+                                </a>
+                            {% elif criterion.criterion_type == 'bulk_analysis' %}
+                                <a href="{% url 'bulk_analysis' %}?criterion={{ criterion.id }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-chart-line me-1"></i>Usar en comparativa
+                                </a>
+                            {% else %}
+                                <a href="{% url 'cv_list' %}?q={{ criterion.content|urlencode }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search me-1"></i>Buscar perfiles
+                                </a>
+                            {% endif %}
+
+                            <form method="post" action="{% url 'delete_saved_criterion' criterion.id %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        {% if criterion.last_used_at %}
+                        <small class="text-muted d-block mt-3">
+                            Último uso: {{ criterion.last_used_at|date:"d/m/Y H:i" }}
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-bookmark fa-4x text-primary mb-3"></i>
+            <h4 class="text-muted">Todavía no hay criterios guardados</h4>
+            <p class="text-muted mb-0">Creá tu primer criterio para reutilizarlo en búsquedas, matching o comparativas.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Comparativa inteligente - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .compare-hero {
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-stat {
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 18px;
+        min-width: 190px;
+        padding: 1rem;
+    }
+
+    .hero-stat small {
+        color: rgba(255, 255, 255, .72);
+        display: block;
+        font-weight: 700;
+        margin-bottom: .25rem;
+        text-transform: uppercase;
+    }
+
+    .hero-stat strong {
+        display: block;
+        font-size: 1.9rem;
+        line-height: 1;
+    }
+
+    .panel-title {
+        align-items: center;
+        display: flex;
+        gap: .75rem;
+        margin-bottom: 1.15rem;
+    }
+
+    .panel-icon {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 14px;
+        color: #2563eb;
+        display: flex;
+        flex: 0 0 auto;
+        height: 46px;
+        justify-content: center;
+        width: 46px;
+    }
+
+    .panel-title h4,
+    .panel-title h5 {
+        color: #0f172a;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .compare-info-grid {
+        display: grid;
+        gap: .8rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-bottom: 1.25rem;
+    }
+
+    .compare-info-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: .9rem;
+    }
+
+    .compare-info-item i {
+        color: #2563eb;
+        margin-bottom: .45rem;
+    }
+
+    .compare-info-item strong {
+        color: #0f172a;
+        display: block;
+        font-size: .9rem;
+        margin-bottom: .2rem;
+    }
+
+    .candidate-row {
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        display: flex;
+        gap: .75rem;
+        padding: .75rem;
+    }
+
+    .candidate-row + .candidate-row {
+        margin-top: .65rem;
+    }
+
+    .candidate-avatar {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 12px;
+        color: #2563eb;
+        display: flex;
+        flex: 0 0 auto;
+        height: 38px;
+        justify-content: center;
+        width: 38px;
+    }
+
+    .recent-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: .9rem;
+        transition: all .2s ease;
+    }
+
+    .recent-card:hover {
+        background: #f8fafc;
+        border-color: #bfdbfe;
+    }
+
+    .empty-box {
+        background: white;
+        border-radius: 24px;
+        padding: 4rem 2rem;
+        text-align: center;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .empty-icon {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 24px;
+        color: #2563eb;
+        display: inline-flex;
+        font-size: 2.4rem;
+        height: 86px;
+        justify-content: center;
+        margin-bottom: 1.25rem;
+        width: 86px;
+    }
+
+    .submit-progress {
+        border: 1px solid #fde68a;
+        background: #fffbeb;
+        color: #92400e;
+    }
+
+    @media (max-width: 991.98px) {
+        .compare-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-stat {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="hero-box compare-hero d-flex justify-content-between align-items-center flex-wrap gap-4">
+    <div>
+        <h2 class="mb-2">
+            <i class="fas fa-chart-line me-2"></i>Comparativa inteligente de perfiles
+        </h2>
+        <p class="mb-0 opacity-75">
+            Consultá criterios de selección y TalentScan IA comparará candidatos con evidencia concreta.
+        </p>
+    </div>
+
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div class="hero-stat">
+            <small>Perfiles listos</small>
+            <strong>{{ cvs_count }}</strong>
+            <span class="opacity-75 small">procesados por IA</span>
+        </div>
+
+        <a href="{% url 'bulk_analysis_history' %}" class="btn btn-light">
+            <i class="fas fa-clock-rotate-left me-1"></i>Historial
+        </a>
+    </div>
+</div>
+
+{% if cvs_count == 0 %}
+
+<div class="empty-box">
+    <div class="empty-icon">
+        <i class="fas fa-users-slash"></i>
+    </div>
+
+    <h3 class="text-muted mb-3">No hay perfiles disponibles para comparar</h3>
+    <p class="text-muted mb-4">
+        Primero cargá perfiles profesionales para ejecutar comparativas inteligentes.
+    </p>
+
+    <a href="{% url 'cv_upload' %}" class="btn btn-primary btn-lg px-4">
+        <i class="fas fa-cloud-arrow-up me-2"></i>Cargar perfiles
+    </a>
+</div>
+
+{% elif cvs_count < 2 %}
+
+<div class="empty-box">
+    <div class="empty-icon">
+        <i class="fas fa-user-plus"></i>
+    </div>
+
+    <h3 class="text-muted mb-3">Se requieren al menos 2 perfiles</h3>
+    <p class="text-muted mb-4">
+        La comparativa necesita más de un perfil procesado para generar un ranking útil.
+    </p>
+
+    <a href="{% url 'cv_upload' %}" class="btn btn-primary btn-lg px-4">
+        <i class="fas fa-cloud-arrow-up me-2"></i>Cargar otro perfil
+    </a>
+</div>
+
+{% else %}
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card glass-card">
+            <div class="card-body p-4">
+                <div class="panel-title">
+                    <div class="panel-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div>
+                        <h4>Nueva evaluación comparativa</h4>
+                        <small class="text-muted">Preguntá por skills, experiencia, seniority, educación o ajuste a un criterio.</small>
+                    </div>
+                </div>
+
+                <div class="compare-info-grid">
+                    <div class="compare-info-item">
+                        <i class="fas fa-users"></i>
+                        <strong>Comparación múltiple</strong>
+                        <small class="text-muted">Evalúa {{ cvs_count }} perfiles procesados.</small>
+                    </div>
+
+                    <div class="compare-info-item">
+                        <i class="fas fa-list-ol"></i>
+                        <strong>Ranking</strong>
+                        <small class="text-muted">Ordena candidatos por ajuste al criterio.</small>
+                    </div>
+
+                    <div class="compare-info-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <strong>Evidencia</strong>
+                        <small class="text-muted">Usa solo datos explícitos de los CVs.</small>
+                    </div>
+                </div>
+
+                <div id="bulk-analysis-form">
+                    {% crispy form %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card glass-card mb-4">
+            <div class="card-body">
+                <div class="panel-title">
+                    <div class="panel-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div>
+                        <h5>Perfiles incluidos</h5>
+                        <small class="text-muted">Muestra hasta 10 perfiles recientes.</small>
+                    </div>
+                </div>
+
+                {% for cv in user_cvs %}
+                <div class="candidate-row">
+                    <div class="candidate-avatar">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div>
+                        <strong>{{ cv.candidate_name }}</strong><br>
+                        <small class="text-muted">{{ cv.uploaded_at|date:"d/m/Y H:i" }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card glass-card mb-4">
+            <div class="card-body">
+                <div class="panel-title">
+                    <div class="panel-icon">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <div>
+                        <h5>Criterios guardados</h5>
+                        <small class="text-muted">Reutilizá consultas comparativas.</small>
+                    </div>
+                </div>
+
+                {% if saved_criteria %}
+                    {% for criterion in saved_criteria %}
+                    <a href="{% url 'bulk_analysis' %}?criterion={{ criterion.id }}" class="recent-card d-block mb-2 text-decoration-none">
+                        <strong>{{ criterion.name }}</strong>
+                        <small class="text-muted d-block mt-1">{{ criterion.get_short_content }}</small>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-muted small mb-3">No hay criterios comparativos guardados.</div>
+                {% endif %}
+
+                <a href="{% url 'saved_criteria' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>Gestionar criterios
+                </a>
+            </div>
+        </div>
+
+        <div class="card glass-card">
+            <div class="card-body">
+                <div class="panel-title">
+                    <div class="panel-icon">
+                        <i class="fas fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <h5>Actividad reciente</h5>
+                        <small class="text-muted">Últimas comparativas generadas.</small>
+                    </div>
+                </div>
+
+                {% if bulk_queries %}
+                    {% for query in bulk_queries %}
+                    <div class="recent-card mb-3">
+                        <strong>{{ query.created_at|date:"d/m/Y H:i" }}</strong>
+                        <small class="text-muted d-block mt-1">{{ query.get_short_query }}</small>
+
+                        <div class="mt-2">
+                            <span class="badge bg-primary">{{ query.get_cvs_count }} perfiles</span>
+
+                            {% if query.processing_time %}
+                            <span class="badge bg-secondary">{{ query.processing_time|floatformat:1 }} seg</span>
+                            {% endif %}
+                        </div>
+
+                        <a href="{% url 'bulk_analysis_detail' query.id %}" class="btn btn-sm btn-outline-primary mt-3">
+                            <i class="fas fa-eye me-1"></i>Ver resultado
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-muted small">
+                        Todavía no hay comparativas recientes.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('#bulk-analysis-form form');
+    if (!form) return;
+
+    const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
+
+    form.addEventListener('submit', function() {
+        if (submitBtn) {
+            submitBtn.disabled = true;
+
+            if (submitBtn.tagName === 'INPUT') {
+                submitBtn.value = 'Procesando análisis...';
+            } else {
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando análisis...';
+            }
+        }
+
+        if (form.querySelector('.submit-progress')) return;
+
+        const progressDiv = document.createElement('div');
+        progressDiv.className = 'alert submit-progress mt-4 rounded-4';
+        progressDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-2"></div>
+                <span>Procesando {{ cvs_count }} perfiles con inteligencia artificial...</span>
+            </div>
+        `;
+
+        form.appendChild(progressDiv);
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,552 @@
+{% extends 'base.html' %}
+{% load cv_extras %}
+
+{% block title %}Perfiles profesionales - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-hero {
+        background: linear-gradient(135deg, #0f172a, #2563eb);
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+    }
+
+    .filter-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        margin-bottom: 2rem;
+    }
+
+    .profile-card {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        transition: all .2s ease;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    .profile-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: #eff6ff;
+        color: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex: 0 0 auto;
+    }
+
+    .status-pill {
+        border-radius: 999px;
+        padding: .45rem .72rem;
+        font-size: .75rem;
+        font-weight: 700;
+    }
+
+    .summary-box {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        min-height: 86px;
+    }
+
+    .tag-box {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: .75rem .85rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .tag-label {
+        font-size: .72rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: .04rem;
+    }
+
+    .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .4rem;
+    }
+
+    .data-chip {
+        background: #ffffff;
+        border: 1px solid #dbeafe;
+        border-radius: 999px;
+        color: #1d4ed8;
+        display: inline-flex;
+        font-size: .75rem;
+        font-weight: 700;
+        line-height: 1;
+        max-width: 100%;
+        padding: .42rem .58rem;
+    }
+
+    .data-chip.success {
+        border-color: #bbf7d0;
+        color: #15803d;
+    }
+
+    .data-chip.dark {
+        border-color: #cbd5e1;
+        color: #334155;
+    }
+
+    .data-chip.muted {
+        border-color: #e2e8f0;
+        color: #64748b;
+    }
+
+    .score-badge {
+        background: #0f172a;
+        border-radius: 14px;
+        color: #ffffff;
+        min-width: 62px;
+        padding: .45rem .6rem;
+        text-align: center;
+    }
+
+    .score-badge strong {
+        display: block;
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    .score-badge small {
+        color: rgba(255, 255, 255, .72);
+        font-size: .62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .match-reasons {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 14px;
+        color: #1e40af;
+        font-size: .78rem;
+        font-weight: 700;
+        padding: .65rem .75rem;
+    }
+
+    .completeness-meter {
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 7px;
+        overflow: hidden;
+    }
+
+    .completeness-fill {
+        background: linear-gradient(90deg, #2563eb, #06b6d4);
+        border-radius: inherit;
+        height: 100%;
+    }
+
+    .pipeline-pill {
+        background: #f1f5f9;
+        border-radius: 999px;
+        color: #475569;
+        display: inline-flex;
+        font-size: .75rem;
+        font-weight: 800;
+        padding: .42rem .65rem;
+    }
+
+    .profile-name {
+        color: #0f172a;
+        font-size: 1.05rem;
+        font-weight: 800;
+        line-height: 1.25;
+    }
+
+    .file-name {
+        background: #f1f5f9;
+        border-radius: 12px;
+        color: #475569;
+        overflow: hidden;
+        padding: .55rem .7rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .profile-card .card-footer {
+        padding: 0 1rem 1rem;
+    }
+
+    .filter-card .form-label {
+        color: #334155;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .empty-state {
+        background: white;
+        border-radius: 24px;
+        padding: 4rem 2rem;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .btn-rounded {
+        border-radius: 12px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="dashboard-hero d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h2 class="mb-2">
+            <i class="fas fa-users me-2"></i>Perfiles profesionales
+        </h2>
+        <p class="mb-0 opacity-75">
+            {% if has_search %}
+                {{ total_cvs }} perfil{{ total_cvs|pluralize:"es" }} rankeado{{ total_cvs|pluralize:"s" }} por compatibilidad
+            {% else %}
+                {{ total_cvs }} perfil{{ total_cvs|pluralize:"es" }} encontrado{{ total_cvs|pluralize:"s" }} para análisis asistido por IA
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+        {% if can_write_profiles %}
+        <form method="post" action="{% url 'normalize_existing_profiles' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-light btn-rounded px-4">
+                <i class="fas fa-sync me-1"></i>Normalizar perfiles
+            </button>
+        </form>
+
+        <a href="{% url 'cv_upload' %}" class="btn btn-light btn-rounded px-4">
+            <i class="fas fa-plus me-1"></i>Cargar perfil
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card filter-card">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">
+            <i class="fas fa-filter me-2 text-primary"></i>Filtros inteligentes
+        </h5>
+
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Búsqueda general</label>
+                <input
+                    type="text"
+                    name="q"
+                    class="form-control"
+                    placeholder="Nombre, experiencia, resumen..."
+                    value="{{ filters.q }}"
+                >
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Skill</label>
+                <input
+                    type="text"
+                    name="skill"
+                    class="form-control"
+                    placeholder="SQL, Python..."
+                    value="{{ filters.skill }}"
+                >
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Puesto</label>
+                <input
+                    type="text"
+                    name="role"
+                    class="form-control"
+                    placeholder="Analista, Gerente..."
+                    value="{{ filters.role }}"
+                >
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Estudio</label>
+                <input
+                    type="text"
+                    name="education"
+                    class="form-control"
+                    placeholder="Licenciatura..."
+                    value="{{ filters.education }}"
+                >
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Universidad</label>
+                <select name="institution" class="form-select">
+                    <option value="">Todas</option>
+                    {% for acronym, university_name in university_options %}
+                        <option value="{{ acronym }}" {% if filters.institution == acronym %}selected{% endif %}>
+                            {{ acronym }} — {{ university_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary btn-rounded px-4">
+                    <i class="fas fa-magnifying-glass me-1"></i>Filtrar
+                </button>
+
+                <a href="{% url 'cv_list' %}" class="btn btn-outline-secondary btn-rounded px-4">
+                    <i class="fas fa-eraser me-1"></i>Limpiar filtros
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if page_obj %}
+
+<div class="row">
+    {% for cv in page_obj %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card profile-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="profile-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+
+                        <div>
+                            <h5 class="card-title profile-name mb-1">
+                                {{ cv.candidate_name }}
+                            </h5>
+
+                            <small class="text-muted">
+                                {{ cv.uploaded_at|date:"d/m/Y H:i" }}
+                            </small>
+                        </div>
+                    </div>
+
+                    {% if has_search %}
+                    <div class="score-badge">
+                        <small>Match</small>
+                        <strong>{{ cv.match_score }}%</strong>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if has_search and cv.match_reasons %}
+                <div class="match-reasons mb-3">
+                    {% for reason in cv.match_reasons %}
+                        <span class="me-2"><i class="fas fa-check me-1"></i>{{ reason }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    {% if cv.status == 'completed' %}
+                        <span class="badge bg-success status-pill">
+                            <i class="fas fa-circle-check me-1"></i>Procesado
+                        </span>
+                    {% elif cv.status == 'processing' %}
+                        <span class="badge bg-warning text-dark status-pill">
+                            <i class="fas fa-spinner me-1"></i>Procesando
+                        </span>
+                    {% elif cv.status == 'pending' %}
+                        <span class="badge bg-secondary status-pill">
+                            <i class="fas fa-clock me-1"></i>Pendiente
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger status-pill">
+                            <i class="fas fa-triangle-exclamation me-1"></i>Error
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="pipeline-pill">
+                        <i class="fas fa-columns me-1"></i>{{ cv.get_pipeline_status_display }}
+                    </span>
+                    {% if cv.is_shortlisted %}
+                        <span class="pipeline-pill text-primary">
+                            <i class="fas fa-star me-1"></i>Shortlist
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-bold text-muted mb-1">
+                        <span>Completitud</span>
+                        <span>{{ cv.completeness_score }}%</span>
+                    </div>
+                    <div class="completeness-meter">
+                        <div class="completeness-fill" style="width: {{ cv.completeness_score }}%"></div>
+                    </div>
+                </div>
+
+                <div class="file-name small mb-3" title="{{ cv.pdf_file.name }}">
+                    <i class="fas fa-file-lines me-1"></i>
+                    {{ cv.pdf_file.name|slice:"cvs/" }}
+                </div>
+
+                {% if cv.detected_skills %}
+                <div class="tag-box mb-3">
+                    <div class="tag-label mb-1">Skills detectadas</div>
+                    <div class="chip-list">
+                        {% for skill_chip in cv.detected_skills|chips:6 %}
+                            <span class="data-chip">{{ skill_chip }}</span>
+                        {% endfor %}
+                        {% with remaining=cv.detected_skills|remaining_chips_count:6 %}
+                            {% if remaining %}
+                                <span class="data-chip muted">+{{ remaining }}</span>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if cv.detected_roles %}
+                <div class="tag-box mb-3">
+                    <div class="tag-label mb-1">Puestos detectados</div>
+                    <div class="chip-list">
+                        {% for role_chip in cv.detected_roles|chips:4 %}
+                            <span class="data-chip success">{{ role_chip }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if cv.detected_education %}
+                <div class="tag-box mb-3">
+                    <div class="tag-label mb-1">Estudios detectados</div>
+                    <div class="chip-list">
+                        {% for education_chip in cv.detected_education|chips:3 %}
+                            <span class="data-chip dark">{{ education_chip }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if cv.detected_institutions %}
+                <div class="tag-box mb-3">
+                    <div class="tag-label mb-1">Instituciones detectadas</div>
+                    <div class="chip-list">
+                        {% for institution_chip in cv.detected_institutions|chips:3 %}
+                            <span class="data-chip muted">{{ institution_chip }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if cv.analysis_result %}
+                <div class="summary-box">
+                    <small class="text-muted">
+                        {{ cv.analysis_result|truncatechars:130 }}
+                    </small>
+                </div>
+                {% else %}
+                <div class="summary-box">
+                    <small class="text-muted">
+                        El perfil todavía no cuenta con una evaluación automática disponible.
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-footer bg-white border-0 pt-0">
+                <div class="row g-2">
+                    <div class="col-8">
+                        <a href="{% url 'cv_detail' cv.id %}" class="btn btn-primary btn-rounded w-100">
+                            <i class="fas fa-chart-line me-1"></i>Analizar perfil
+                        </a>
+                    </div>
+
+                    {% if can_write_profiles %}
+                    <div class="col-4">
+                        <a href="{% url 'cv_delete' cv.id %}" class="btn btn-outline-danger btn-rounded w-100" title="Eliminar perfil">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav aria-label="Paginación de perfiles">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?q={{ filters.q }}&skill={{ filters.skill }}&role={{ filters.role }}&education={{ filters.education }}&institution={{ filters.institution }}&page=1">
+                &laquo; Primera
+            </a>
+        </li>
+
+        <li class="page-item">
+            <a class="page-link" href="?q={{ filters.q }}&skill={{ filters.skill }}&role={{ filters.role }}&education={{ filters.education }}&institution={{ filters.institution }}&page={{ page_obj.previous_page_number }}">
+                Anterior
+            </a>
+        </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?q={{ filters.q }}&skill={{ filters.skill }}&role={{ filters.role }}&education={{ filters.education }}&institution={{ filters.institution }}&page={{ page_obj.next_page_number }}">
+                Siguiente
+            </a>
+        </li>
+
+        <li class="page-item">
+            <a class="page-link" href="?q={{ filters.q }}&skill={{ filters.skill }}&role={{ filters.role }}&education={{ filters.education }}&institution={{ filters.institution }}&page={{ page_obj.paginator.num_pages }}">
+                Última &raquo;
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+
+<div class="empty-state text-center">
+    <i class="fas fa-users fa-5x text-primary mb-4"></i>
+
+    <h3 class="text-muted mb-3">
+        No se encontraron perfiles
+    </h3>
+
+    <p class="text-muted mb-4">
+        Probá limpiar los filtros o cargar un nuevo perfil profesional.
+    </p>
+
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a href="{% url 'cv_list' %}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">
+            <i class="fas fa-eraser me-2"></i>Limpiar filtros
+        </a>
+
+        <a href="{% url 'cv_upload' %}" class="btn btn-primary btn-lg rounded-pill px-4">
+            <i class="fas fa-upload me-2"></i>Cargar perfil
+        </a>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

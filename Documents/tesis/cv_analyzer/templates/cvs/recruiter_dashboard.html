@@ -1,0 +1,539 @@
+{% extends 'base.html' %}
+{% load cv_extras %}
+
+{% block title %}Dashboard Recruiter - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-hero {
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at top right, rgba(56, 189, 248, .26), transparent 32%),
+            linear-gradient(135deg, #0f172a, #1d4ed8);
+        color: white;
+        border-radius: 24px;
+        padding: 2rem 2.25rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+    }
+
+    .dashboard-hero h2 {
+        font-weight: 800;
+    }
+
+    .dashboard-hero-meta {
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 18px;
+        padding: 1rem 1.15rem;
+        min-width: 210px;
+        backdrop-filter: blur(8px);
+    }
+
+    .dashboard-hero-meta small {
+        color: rgba(255, 255, 255, .72);
+        display: block;
+        font-weight: 600;
+        margin-bottom: .25rem;
+    }
+
+    .dashboard-hero-meta strong {
+        display: block;
+        font-size: 1.7rem;
+        line-height: 1;
+    }
+
+    .dashboard-section-title {
+        color: #0f172a;
+        font-size: .82rem;
+        font-weight: 800;
+        letter-spacing: .06rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+    }
+
+    .metric-card {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        height: 100%;
+        overflow: hidden;
+        transition: all .2s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 1.3rem;
+        flex: 0 0 auto;
+    }
+
+    .metric-icon.success {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .metric-icon.warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .metric-icon.danger {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .metric-value {
+        color: #0f172a;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        line-height: 1;
+    }
+
+    .metric-caption {
+        color: #64748b;
+        display: block;
+        font-size: .76rem;
+        font-weight: 700;
+        margin-bottom: .35rem;
+        text-transform: uppercase;
+    }
+
+    .metric-progress {
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 6px;
+        overflow: hidden;
+    }
+
+    .metric-progress-fill {
+        background: #2563eb;
+        border-radius: inherit;
+        height: 100%;
+    }
+
+    .chart-card {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .chart-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .chart-title {
+        align-items: center;
+        display: flex;
+        gap: .75rem;
+        margin-bottom: 1.15rem;
+    }
+
+    .chart-title-icon {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 12px;
+        color: #2563eb;
+        display: flex;
+        height: 40px;
+        justify-content: center;
+        width: 40px;
+        flex: 0 0 auto;
+    }
+
+    .chart-title h5 {
+        color: #0f172a;
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .bar-row {
+        margin-bottom: .95rem;
+    }
+
+    .bar-label {
+        color: #334155;
+        font-size: .9rem;
+        font-weight: 700;
+        margin-bottom: .35rem;
+        max-width: 76%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .bar-track {
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 9px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        background: linear-gradient(90deg, #2563eb, #06b6d4);
+        height: 100%;
+        border-radius: 999px;
+        min-width: 6px;
+    }
+
+    .bar-count {
+        background: #f1f5f9;
+        border-radius: 999px;
+        color: #475569;
+        font-size: .78rem;
+        font-weight: 800;
+        padding: .15rem .55rem;
+    }
+
+    .empty-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.2rem;
+        color: #64748b;
+        min-height: 112px;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+
+    .empty-box i {
+        color: #94a3b8;
+        font-size: 1.35rem;
+    }
+
+    .intelligence-card {
+        background: #ffffff;
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .alert-tile {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .alert-tile-icon {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 12px;
+        color: #2563eb;
+        display: flex;
+        height: 38px;
+        justify-content: center;
+        width: 38px;
+    }
+
+    .alert-tile-icon.warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .alert-tile-icon.success {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .pipeline-row,
+    .candidate-row {
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        gap: .85rem;
+        justify-content: space-between;
+        padding: .8rem 0;
+    }
+
+    .pipeline-row:last-child,
+    .candidate-row:last-child {
+        border-bottom: none;
+    }
+
+    .pipeline-count {
+        background: #f1f5f9;
+        border-radius: 999px;
+        color: #475569;
+        font-size: .8rem;
+        font-weight: 850;
+        padding: .25rem .6rem;
+    }
+
+    .completeness-meter {
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 7px;
+        overflow: hidden;
+        width: 100px;
+    }
+
+    .completeness-fill {
+        background: linear-gradient(90deg, #2563eb, #06b6d4);
+        border-radius: inherit;
+        height: 100%;
+    }
+
+    .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+    }
+
+    .data-chip {
+        background: #eff6ff;
+        border-radius: 999px;
+        color: #1d4ed8;
+        font-size: .72rem;
+        font-weight: 750;
+        padding: .35rem .5rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .dashboard-hero {
+            padding: 1.5rem;
+        }
+
+        .dashboard-hero-meta {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="dashboard-hero d-flex justify-content-between align-items-center flex-wrap gap-4">
+    <div>
+        <h2 class="mb-2">
+            <i class="fas fa-chart-pie me-2"></i>Dashboard Recruiter
+        </h2>
+        <p class="mb-0 opacity-75">
+            Indicadores agregados de perfiles profesionales, skills, formación e instituciones detectadas por IA.
+        </p>
+    </div>
+
+    <div class="dashboard-hero-meta">
+        <small>Perfiles analizados</small>
+        <strong>{{ completed_percent }}%</strong>
+        <span class="opacity-75 small">{{ completed_cvs }} de {{ total_cvs }} procesados</span>
+    </div>
+</div>
+
+<div class="dashboard-section-title">Centro de inteligencia recruiter</div>
+
+<div class="row mb-4">
+    {% for alert in quality_alerts %}
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="alert-tile">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                    <span class="metric-caption">{{ alert.label }}</span>
+                    <div class="metric-value">{{ alert.value }}</div>
+                </div>
+                <div class="alert-tile-icon {{ alert.tone }}">
+                    <i class="fas {{ alert.icon }}"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-5 mb-4">
+        <div class="card intelligence-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-columns me-2 text-primary"></i>Pipeline de selección
+                </h5>
+
+                {% for item in pipeline_summary %}
+                <div class="pipeline-row">
+                    <span>{{ item.label }}</span>
+                    <span class="pipeline-count">{{ item.count }}</span>
+                </div>
+                {% endfor %}
+
+                <div class="d-flex gap-2 flex-wrap mt-3">
+                    <a href="{% url 'selection_kanban' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-columns me-1"></i>Ver pipeline
+                    </a>
+                    <a href="{% url 'export_shortlist' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-file-csv me-1"></i>Exportar shortlist
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7 mb-4">
+        <div class="card intelligence-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-list-ol me-2 text-primary"></i>Top perfiles por completitud
+                </h5>
+
+                {% if top_candidates %}
+                    {% for candidate in top_candidates %}
+                    <div class="candidate-row">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <strong>{{ candidate.candidate_name }}</strong>
+                                {% if candidate.is_shortlisted %}
+                                    <span class="data-chip"><i class="fas fa-star me-1"></i>Shortlist</span>
+                                {% endif %}
+                            </div>
+                            {% if candidate.detected_skills %}
+                            <div class="chip-list mt-2">
+                                {% for skill_chip in candidate.detected_skills|chips:4 %}
+                                    <span class="data-chip">{{ skill_chip }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            <strong>{{ candidate.completeness_score }}%</strong>
+                            <div class="completeness-meter mt-1">
+                                <div class="completeness-fill" style="width: {{ candidate.completeness_score }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-box">
+                        <i class="fas fa-info-circle"></i>
+                        <span>No hay perfiles suficientes para rankear.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section-title">Estado de perfiles</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="metric-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div>
+                        <span class="metric-caption">Total perfiles</span>
+                        <div class="metric-value">{{ total_cvs }}</div>
+                    </div>
+                </div>
+                <small class="text-muted">Base completa cargada por el usuario.</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="metric-icon success">
+                        <i class="fas fa-circle-check"></i>
+                    </div>
+                    <div>
+                        <span class="metric-caption">Procesados</span>
+                        <div class="metric-value">{{ completed_cvs }}</div>
+                    </div>
+                </div>
+                <div class="metric-progress mb-2">
+                    <div class="metric-progress-fill bg-success" style="width: {{ completed_percent }}%"></div>
+                </div>
+                <small class="text-muted">{{ completed_percent }}% disponible para análisis.</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="metric-icon warning">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                    <div>
+                        <span class="metric-caption">En proceso</span>
+                        <div class="metric-value">{{ processing_cvs }}</div>
+                    </div>
+                </div>
+                <div class="metric-progress mb-2">
+                    <div class="metric-progress-fill bg-warning" style="width: {{ processing_percent }}%"></div>
+                </div>
+                <small class="text-muted">{{ processing_percent }}% pendiente de finalizar.</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="metric-icon danger">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <span class="metric-caption">Con error</span>
+                        <div class="metric-value">{{ error_cvs }}</div>
+                    </div>
+                </div>
+                <div class="metric-progress mb-2">
+                    <div class="metric-progress-fill bg-danger" style="width: {{ error_percent }}%"></div>
+                </div>
+                <small class="text-muted">{{ error_percent }}% requiere revisión.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section-title">Señales detectadas por IA</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        {% include 'cvs/dashboard_bar_card.html' with title='Skills más frecuentes' icon='fa-code' items=top_skills %}
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        {% include 'cvs/dashboard_bar_card.html' with title='Universidades / Instituciones' icon='fa-building-columns' items=top_institutions %}
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        {% include 'cvs/dashboard_bar_card.html' with title='Puestos detectados' icon='fa-briefcase' items=top_roles %}
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        {% include 'cvs/dashboard_bar_card.html' with title='Formación detectada' icon='fa-graduation-cap' items=top_education %}
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        {% include 'cvs/dashboard_bar_card.html' with title='Seniority detectado' icon='fa-layer-group' items=top_seniority %}
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        {% include 'cvs/dashboard_bar_card.html' with title='Idiomas detectados' icon='fa-language' items=top_languages %}
+    </div>
+</div>
+{% endblock %}

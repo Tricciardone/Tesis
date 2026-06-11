@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Comparativa IA - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .hero-box {
+        background: linear-gradient(135deg, #0f172a, #2563eb);
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+    }
+
+    .glass-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+
+    .metric-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        height: 100%;
+    }
+
+    .candidate-pill {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-radius: 999px;
+        padding: 0.5rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+    }
+
+    .analysis-response {
+        background: #f8fafc;
+        border-radius: 18px;
+        padding: 1.5rem;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        border: 1px solid #e2e8f0;
+        font-size: 0.95rem;
+    }
+
+    .section-title {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .action-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .btn-soft {
+        border-radius: 12px;
+        padding: 0.7rem 1.2rem;
+        font-weight: 600;
+    }
+
+    @media print {
+        .no-print,
+        nav,
+        .sidebar,
+        .footer {
+            display: none !important;
+        }
+
+        .analysis-response {
+            border: none;
+            background: white;
+        }
+    }
+</style>
+
+<div class="hero-box">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="mb-2">
+                <i class="fas fa-brain me-2"></i>Comparativa inteligente de perfiles
+            </h2>
+            <p class="mb-0 opacity-75">
+                Evaluación automatizada de candidatos mediante inteligencia artificial
+            </p>
+        </div>
+
+        <div class="no-print">
+            <a href="{% url 'bulk_analysis' %}" class="btn btn-light btn-soft me-2">
+                <i class="fas fa-plus me-1"></i>Nueva comparativa
+            </a>
+
+            <a href="{% url 'bulk_analysis_history' %}" class="btn btn-outline-light btn-soft">
+                <i class="fas fa-clock-rotate-left me-1"></i>Historial
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card glass-card h-100">
+            <div class="card-body">
+                <h5 class="section-title mb-3">
+                    <i class="fas fa-message me-2 text-primary"></i>Consulta realizada
+                </h5>
+
+                <div class="analysis-response">
+                    {{ bulk_query.query }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="metric-box mb-3">
+            <h6 class="text-muted mb-2">Fecha</h6>
+            <strong>{{ bulk_query.created_at|date:"d/m/Y H:i" }}</strong>
+        </div>
+
+        <div class="metric-box mb-3">
+            <h6 class="text-muted mb-2">Perfiles analizados</h6>
+            <strong>{{ bulk_query.get_cvs_count }}</strong>
+        </div>
+
+        {% if bulk_query.processing_time %}
+        <div class="metric-box">
+            <h6 class="text-muted mb-2">Tiempo de procesamiento</h6>
+            <strong>{{ bulk_query.processing_time|floatformat:1 }} segundos</strong>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card glass-card mb-4">
+    <div class="card-body">
+        <h5 class="section-title mb-4">
+            <i class="fas fa-users me-2 text-primary"></i>Perfiles incluidos
+        </h5>
+
+        <div class="row">
+            {% for cv in cvs_analyzed %}
+            <div class="col-md-4 col-lg-3">
+                <div class="candidate-pill">
+                    <i class="fas fa-user-check"></i>
+                    {{ cv.candidate_name }}
+                    <a href="{% url 'cv_detail' cv.id %}" class="text-primary">
+                        <i class="fas fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card glass-card">
+    <div class="card-body">
+        <h4 class="section-title mb-4">
+            <i class="fas fa-chart-line me-2 text-primary"></i>Resultado del análisis IA
+        </h4>
+
+        <div class="analysis-response">
+            {{ bulk_query.response|linebreaks }}
+        </div>
+    </div>
+</div>
+
+<div class="card action-card mt-4 no-print">
+    <div class="card-body">
+        <h6 class="section-title mb-3">
+            <i class="fas fa-bolt me-2"></i>Acciones rápidas
+        </h6>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'bulk_analysis' %}" class="btn btn-primary btn-soft">
+                <i class="fas fa-rotate-right me-1"></i>Nueva consulta
+            </a>
+
+            <button type="button" class="btn btn-outline-secondary btn-soft" onclick="window.print()">
+                <i class="fas fa-print me-1"></i>Exportar / imprimir
+            </button>
+
+            <button type="button" class="btn btn-outline-primary btn-soft" onclick="copyToClipboard()">
+                <i class="fas fa-copy me-1"></i>Copiar análisis
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    const text = document.querySelector('.analysis-response').innerText;
+
+    navigator.clipboard.writeText(text).then(function () {
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success position-fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '9999';
+        toast.style.borderRadius = '14px';
+        toast.innerHTML = '<i class="fas fa-check me-2"></i>Análisis copiado correctamente';
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 2500);
+    });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Auditoría - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .audit-hero {
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .audit-card {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+        overflow: hidden;
+    }
+
+    .action-pill {
+        background: #f1f5f9;
+        border-radius: 999px;
+        color: #334155;
+        display: inline-flex;
+        font-size: .78rem;
+        font-weight: 800;
+        padding: .38rem .62rem;
+    }
+</style>
+
+<div class="hero-box audit-hero d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h2 class="mb-2">
+            <i class="fas fa-clipboard-list me-2"></i>Auditoría
+        </h2>
+        <p class="mb-0 opacity-75">Registro de acciones críticas del equipo.</p>
+    </div>
+    <div class="text-end">
+        <small class="opacity-75 d-block">Eventos</small>
+        <strong class="fs-2">{{ total_events }}</strong>
+    </div>
+</div>
+
+<div class="card audit-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Acción</th>
+                    <th>Usuario</th>
+                    <th>Perfil</th>
+                    <th>Detalle</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in page_obj %}
+                <tr>
+                    <td class="text-muted small">{{ event.created_at|date:"d/m/Y H:i" }}</td>
+                    <td><span class="action-pill">{{ event.action }}</span></td>
+                    <td>{{ event.user.get_full_name|default:event.user.username|default:"Sistema" }}</td>
+                    <td>
+                        {% if event.cv %}
+                            <a href="{% url 'cv_detail' event.cv.id %}">{{ event.cv.candidate_name }}</a>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted">{{ event.description }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-muted text-center py-4">Todavía no hay eventos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

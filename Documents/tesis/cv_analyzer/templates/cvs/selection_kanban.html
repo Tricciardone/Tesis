@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load cv_extras %}
+
+{% block title %}Pipeline de selección - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .kanban-hero {
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-stat {
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 18px;
+        min-width: 190px;
+        padding: 1rem;
+    }
+
+    .hero-stat small {
+        color: rgba(255, 255, 255, .72);
+        display: block;
+        font-weight: 700;
+        margin-bottom: .25rem;
+        text-transform: uppercase;
+    }
+
+    .hero-stat strong {
+        display: block;
+        font-size: 1.9rem;
+        line-height: 1;
+    }
+
+    .kanban-board {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(5, minmax(240px, 1fr));
+        overflow-x: auto;
+        padding-bottom: .5rem;
+    }
+
+    .kanban-column {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        min-height: 420px;
+        padding: .9rem;
+    }
+
+    .column-header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: .9rem;
+    }
+
+    .column-header h5 {
+        color: #0f172a;
+        font-size: .95rem;
+        font-weight: 850;
+        margin: 0;
+    }
+
+    .column-count {
+        background: #e2e8f0;
+        border-radius: 999px;
+        color: #475569;
+        font-size: .75rem;
+        font-weight: 850;
+        padding: .25rem .55rem;
+    }
+
+    .kanban-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, .06);
+        margin-bottom: .85rem;
+        padding: .9rem;
+    }
+
+    .kanban-card h6 {
+        color: #0f172a;
+        font-weight: 850;
+        margin-bottom: .25rem;
+    }
+
+    .completeness-meter {
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 7px;
+        overflow: hidden;
+    }
+
+    .completeness-fill {
+        background: linear-gradient(90deg, #2563eb, #06b6d4);
+        border-radius: inherit;
+        height: 100%;
+    }
+
+    .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+    }
+
+    .data-chip {
+        background: #eff6ff;
+        border-radius: 999px;
+        color: #1d4ed8;
+        font-size: .72rem;
+        font-weight: 750;
+        padding: .35rem .5rem;
+    }
+
+    .notes-preview {
+        background: #f8fafc;
+        border-radius: 12px;
+        color: #64748b;
+        font-size: .78rem;
+        padding: .6rem;
+    }
+
+    @media (max-width: 1199.98px) {
+        .kanban-board {
+            grid-template-columns: repeat(5, 280px);
+        }
+    }
+</style>
+
+<div class="hero-box kanban-hero d-flex justify-content-between align-items-center flex-wrap gap-4">
+    <div>
+        <h2 class="mb-2">
+            <i class="fas fa-columns me-2"></i>Pipeline de selección
+        </h2>
+        <p class="mb-0 opacity-75">
+            Organizá candidatos por etapa, shortlist y notas internas.
+        </p>
+    </div>
+
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div class="hero-stat">
+            <small>Perfiles</small>
+            <strong>{{ total_cvs }}</strong>
+            <span class="opacity-75 small">en el pipeline</span>
+        </div>
+
+        <a href="{% url 'export_shortlist' %}" class="btn btn-light">
+            <i class="fas fa-file-csv me-1"></i>Exportar shortlist
+        </a>
+    </div>
+</div>
+
+<div class="kanban-board">
+    {% for column in columns %}
+    <div class="kanban-column">
+        <div class="column-header">
+            <h5>{{ column.label }}</h5>
+            <span class="column-count">{{ column.items|length }}</span>
+        </div>
+
+        {% for cv in column.items %}
+        <div class="kanban-card">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <div>
+                    <h6>{{ cv.candidate_name }}</h6>
+                    <small class="text-muted">{{ cv.uploaded_at|date:"d/m/Y" }}</small>
+                </div>
+
+                {% if cv.is_shortlisted %}
+                    <span class="text-primary" title="Shortlist">
+                        <i class="fas fa-star"></i>
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="mb-2">
+                <div class="d-flex justify-content-between small fw-bold text-muted mb-1">
+                    <span>Completitud</span>
+                    <span>{{ cv.completeness_score }}%</span>
+                </div>
+                <div class="completeness-meter">
+                    <div class="completeness-fill" style="width: {{ cv.completeness_score }}%"></div>
+                </div>
+            </div>
+
+            {% if cv.detected_skills %}
+            <div class="chip-list mb-2">
+                {% for skill_chip in cv.detected_skills|chips:4 %}
+                    <span class="data-chip">{{ skill_chip }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if cv.recruiter_notes %}
+            <div class="notes-preview mb-2">
+                {{ cv.recruiter_notes|truncatechars:90 }}
+            </div>
+            {% endif %}
+
+            {% if can_write_profiles %}
+            <form method="post" action="{% url 'update_cv_pipeline' cv.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <select name="pipeline_status" class="form-select form-select-sm mb-2">
+                    {% for value, label in cv.PIPELINE_STATUS_CHOICES %}
+                        <option value="{{ value }}" {% if cv.pipeline_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                <div class="form-check small mb-2">
+                    <input class="form-check-input" type="checkbox" name="is_shortlisted" id="shortlist-{{ cv.id }}" {% if cv.is_shortlisted %}checked{% endif %}>
+                    <label class="form-check-label" for="shortlist-{{ cv.id }}">Shortlist</label>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-fill">
+                        Guardar
+                    </button>
+                    <a href="{% url 'cv_detail' cv.id %}" class="btn btn-outline-secondary btn-sm" title="Ver perfil">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            </form>
+            {% else %}
+            <a href="{% url 'cv_detail' cv.id %}" class="btn btn-outline-secondary btn-sm w-100">
+                <i class="fas fa-eye me-1"></i>Ver perfil
+            </a>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="text-muted small p-2">
+            Sin perfiles en esta etapa.
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

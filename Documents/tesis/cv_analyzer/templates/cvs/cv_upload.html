@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Cargar perfil - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .upload-card {
+        border: none;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    .upload-header {
+        background: linear-gradient(135deg, #0f172a, #2563eb);
+        color: white;
+        padding: 2rem;
+    }
+
+    .info-box {
+        background: #eff6ff;
+        border-left: 5px solid #2563eb;
+        border-radius: 16px;
+        padding: 1rem;
+    }
+
+    .process-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        height: 100%;
+        padding: 1.25rem;
+    }
+
+    .process-step {
+        display: flex;
+        gap: .85rem;
+        padding: .85rem 0;
+    }
+
+    .process-step:not(:last-child) {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .process-icon {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 12px;
+        color: #2563eb;
+        display: flex;
+        flex: 0 0 auto;
+        height: 38px;
+        justify-content: center;
+        width: 38px;
+    }
+
+    .process-step strong {
+        color: #0f172a;
+        display: block;
+        font-size: .92rem;
+    }
+
+    .btn-rounded {
+        border-radius: 12px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7 mb-4 mb-lg-0">
+        <div class="card upload-card">
+            <div class="upload-header">
+                <h3 class="mb-2">
+                    <i class="fas fa-cloud-arrow-up me-2"></i>Cargar perfil profesional
+                </h3>
+                <p class="mb-0 opacity-75">
+                    Incorporá un CV en PDF para procesarlo con el motor de análisis inteligente.
+                </p>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="info-box mb-4">
+                    <strong>Condiciones de carga</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Formato permitido: PDF</li>
+                        <li>Tamaño máximo: 5 MB</li>
+                        <li>El perfil será procesado automáticamente con IA</li>
+                        <li>Luego podrás realizar consultas específicas sobre el candidato</li>
+                    </ul>
+                </div>
+
+                {% crispy form %}
+
+                <div class="mt-4">
+                    <a href="{% url 'cv_list' %}" class="btn btn-outline-secondary btn-rounded">
+                        <i class="fas fa-arrow-left me-1"></i>Volver a perfiles
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="process-card">
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-magic me-2 text-primary"></i>Flujo de análisis
+            </h5>
+
+            <div class="process-step">
+                <div class="process-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div>
+                    <strong>Lectura del PDF</strong>
+                    <small class="text-muted">Se extrae el texto principal del documento.</small>
+                </div>
+            </div>
+
+            <div class="process-step">
+                <div class="process-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div>
+                    <strong>Extracción IA</strong>
+                    <small class="text-muted">Se detectan skills, roles, educación, universidades e idiomas.</small>
+                </div>
+            </div>
+
+            <div class="process-step">
+                <div class="process-icon">
+                    <i class="fas fa-building-columns"></i>
+                </div>
+                <div>
+                    <strong>Normalización</strong>
+                    <small class="text-muted">Las universidades argentinas se clasifican contra el catálogo.</small>
+                </div>
+            </div>
+
+            <div class="process-step">
+                <div class="process-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <strong>Consulta disponible</strong>
+                    <small class="text-muted">El perfil queda listo para búsquedas, matching y comparativas.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (!form) return;
+
+    const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
+
+    form.addEventListener('submit', function() {
+        if (submitBtn) {
+            submitBtn.disabled = true;
+
+            if (submitBtn.tagName === 'INPUT') {
+                submitBtn.value = 'Procesando perfil...';
+            } else {
+                submitBtn.innerHTML = 'Procesando perfil...';
+            }
+        }
+
+        const progressDiv = document.createElement('div');
+        progressDiv.innerHTML = `
+            <div class="alert alert-warning mt-4 rounded-4">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2"></div>
+                    <span>Cargando documento y ejecutando análisis inicial...</span>
+                </div>
+            </div>
+        `;
+
+        form.appendChild(progressDiv);
+    });
+});
+</script>
+{% endblock %}

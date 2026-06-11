@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar perfil - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .delete-card {
+        border: none;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    .delete-header {
+        background: linear-gradient(135deg, #7f1d1d, #dc2626);
+        color: white;
+        padding: 1.6rem;
+    }
+
+    .warning-box {
+        background: #fff7ed;
+        border-left: 5px solid #f97316;
+        border-radius: 14px;
+        padding: 1rem;
+    }
+
+    .detail-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .impact-list li {
+        margin-bottom: .4rem;
+    }
+
+    .delete-footer {
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
+        padding: 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+
+    .btn-rounded {
+        border-radius: 12px;
+        padding: .7rem 1.1rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card delete-card">
+            <div class="delete-header">
+                <h4 class="mb-1">
+                    <i class="fas fa-triangle-exclamation me-2"></i>Eliminar perfil profesional
+                </h4>
+                <p class="mb-0 opacity-75">
+                    Confirmá la baja del perfil y su información asociada.
+                </p>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="warning-box mb-4">
+                    <strong>Atención:</strong> esta acción no se puede deshacer.
+                </div>
+
+                <p class="mb-4">
+                    ¿Confirmás que querés eliminar el perfil de
+                    <strong>{{ cv.candidate_name }}</strong>?
+                </p>
+
+                <div class="detail-box mb-4">
+                    <h6 class="fw-bold mb-3">Información del perfil</h6>
+
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-user-check me-2 text-primary"></i>
+                            Candidato: {{ cv.candidate_name }}
+                        </li>
+
+                        <li class="mb-2">
+                            <i class="fas fa-file-lines me-2 text-primary"></i>
+                            Archivo: {{ cv.pdf_file.name }}
+                        </li>
+
+                        <li class="mb-2">
+                            <i class="fas fa-calendar me-2 text-primary"></i>
+                            Cargado: {{ cv.uploaded_at|date:"d/m/Y H:i" }}
+                        </li>
+
+                        <li>
+                            <i class="fas fa-comments me-2 text-primary"></i>
+                            Análisis asociados: {{ cv.queries.count }}
+                        </li>
+                    </ul>
+                </div>
+
+                <p class="text-muted mb-2">
+                    Al eliminar este perfil también se removerán:
+                </p>
+
+                <ul class="text-muted impact-list">
+                    <li>El archivo PDF cargado</li>
+                    <li>El procesamiento automático asociado</li>
+                    <li>Las consultas individuales realizadas</li>
+                    <li>El historial relacionado con este perfil</li>
+                </ul>
+            </div>
+
+            <div class="delete-footer">
+                <form method="post" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-rounded">
+                        <i class="fas fa-trash me-1"></i>Eliminar perfil
+                    </button>
+                </form>
+
+                <a href="{% url 'cv_detail' cv.id %}" class="btn btn-outline-secondary btn-rounded">
+                    <i class="fas fa-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

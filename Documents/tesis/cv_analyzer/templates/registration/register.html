@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Crear cuenta - TalentScan IA{% endblock %}
+
+{% block auth_content %}
+<style>
+    .auth-wrapper {
+        min-height: 75vh;
+        display: flex;
+        align-items: center;
+    }
+
+    .register-card {
+        border: none;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+    }
+
+    .register-header {
+        background: linear-gradient(135deg, #0f172a, #2563eb);
+        color: white;
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
+
+    .register-icon {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.14);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        font-size: 2rem;
+    }
+
+    .register-title {
+        font-weight: 700;
+        margin-bottom: .25rem;
+    }
+
+    .register-subtitle {
+        opacity: .85;
+        margin-bottom: 0;
+        font-size: .95rem;
+    }
+
+    .register-body {
+        padding: 2rem;
+        background: #ffffff;
+    }
+
+    .register-body label {
+        font-weight: 600;
+        color: #334155;
+        font-size: .9rem;
+    }
+
+    .register-body input {
+        border-radius: 12px;
+        padding: .75rem .9rem;
+        border: 1px solid #cbd5e1;
+    }
+
+    .register-body input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 .2rem rgba(37, 99, 235, .15);
+    }
+
+    .register-body .btn-primary {
+        border-radius: 12px;
+        padding: .8rem;
+        font-weight: 600;
+        background: #2563eb;
+        border: none;
+        width: 100%;
+    }
+
+    .register-body .btn-primary:hover {
+        background: #1d4ed8;
+    }
+
+    .login-box {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 1rem;
+    }
+</style>
+
+<div class="auth-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <div class="card register-card">
+                    <div class="register-header">
+                        <div class="register-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h3 class="register-title">Crear cuenta</h3>
+                        <p class="register-subtitle">Accedé a TalentScan IA para analizar perfiles profesionales con inteligencia artificial</p>
+                    </div>
+
+                    <div class="register-body">
+                        {% crispy form %}
+
+                        <div class="login-box text-center mt-4">
+                            <p class="mb-2 text-muted">¿Ya tenés una cuenta?</p>
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                <i class="fas fa-arrow-right-to-bracket me-1"></i>Iniciar sesión
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-center text-muted mt-3 small">
+                    Plataforma académica para asistencia en procesos de selección.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

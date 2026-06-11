@@ -1,0 +1,36 @@
+name: Deploy VPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload project
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -az --delete --exclude .git --exclude media --exclude staticfiles --exclude .env --exclude .env.production
+          path: ./
+          remote_path: /opt/talentscan/
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Run deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /opt/talentscan
+            chmod +x deploy/deploy_vps.sh
+            ./deploy/deploy_vps.sh

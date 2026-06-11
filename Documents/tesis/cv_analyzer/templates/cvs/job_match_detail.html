@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultado matching - TalentScan IA{% endblock %}
+
+{% block content %}
+<style>
+    .match-hero {
+        color: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-stat {
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 18px;
+        min-width: 170px;
+        padding: 1rem;
+    }
+
+    .hero-stat small {
+        color: rgba(255, 255, 255, .72);
+        display: block;
+        font-weight: 700;
+        margin-bottom: .25rem;
+        text-transform: uppercase;
+    }
+
+    .hero-stat strong {
+        display: block;
+        font-size: 1.65rem;
+        line-height: 1;
+    }
+
+    .section-title {
+        color: #0f172a;
+        font-weight: 850;
+    }
+
+    .panel-icon {
+        align-items: center;
+        background: #eff6ff;
+        border-radius: 14px;
+        color: #2563eb;
+        display: inline-flex;
+        height: 42px;
+        justify-content: center;
+        margin-right: .65rem;
+        width: 42px;
+    }
+
+    .description-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        line-height: 1.65;
+        max-height: 360px;
+        overflow: auto;
+        padding: 1.25rem;
+    }
+
+    .metric-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 1rem;
+    }
+
+    .metric-card + .metric-card {
+        margin-top: .9rem;
+    }
+
+    .metric-label {
+        color: #64748b;
+        display: block;
+        font-size: .74rem;
+        font-weight: 800;
+        letter-spacing: .04rem;
+        margin-bottom: .35rem;
+        text-transform: uppercase;
+    }
+
+    .metric-value {
+        color: #0f172a;
+        font-size: 1.05rem;
+        font-weight: 850;
+    }
+
+    .candidate-pill {
+        align-items: center;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        color: #1d4ed8;
+        display: inline-flex;
+        font-size: .88rem;
+        font-weight: 750;
+        gap: .45rem;
+        margin: .2rem;
+        padding: .52rem .8rem;
+    }
+
+    .candidate-pill a {
+        color: #1d4ed8;
+        text-decoration: none;
+    }
+
+    .result-shell {
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .result-header {
+        align-items: center;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        gap: .8rem;
+        justify-content: space-between;
+        padding: 1.15rem 1.25rem;
+    }
+
+    .result-header-left {
+        align-items: center;
+        display: flex;
+        gap: .8rem;
+    }
+
+    .result-mark {
+        align-items: center;
+        background: #dcfce7;
+        border-radius: 14px;
+        color: #15803d;
+        display: flex;
+        flex: 0 0 auto;
+        height: 46px;
+        justify-content: center;
+        width: 46px;
+    }
+
+    .result-body {
+        padding: 1.35rem;
+    }
+
+    .analysis-response {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 6px solid #2563eb;
+        border-radius: 18px;
+        color: #334155;
+        font-size: .96rem;
+        line-height: 1.75;
+        padding: 1.35rem;
+    }
+
+    .analysis-response p {
+        margin-bottom: .65rem;
+    }
+
+    .quick-guide {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 16px;
+        color: #1e40af;
+        padding: .9rem 1rem;
+    }
+
+    .action-card {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .btn-soft {
+        border-radius: 12px;
+        font-weight: 700;
+        padding: .68rem 1.05rem;
+    }
+
+    @media print {
+        .no-print,
+        nav,
+        .sidebar,
+        .footer {
+            display: none !important;
+        }
+
+        .content-area {
+            padding: 0 !important;
+        }
+
+        .glass-card,
+        .action-card,
+        .result-shell {
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: none !important;
+        }
+
+        .description-box {
+            max-height: none;
+        }
+    }
+</style>
+
+<div class="hero-box match-hero">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+        <div>
+            <h2 class="mb-2">
+                <i class="fas fa-bullseye me-2"></i>Resultado del matching
+            </h2>
+            <p class="mb-0 opacity-75">
+                Evaluación de compatibilidad entre perfiles y descripción del puesto.
+            </p>
+        </div>
+
+        <div class="d-flex gap-3 flex-wrap">
+            <div class="hero-stat">
+                <small>Perfiles</small>
+                <strong>{{ match_query.get_cvs_count }}</strong>
+                <span class="opacity-75 small">evaluados</span>
+            </div>
+
+            {% if match_query.processing_time %}
+            <div class="hero-stat">
+                <small>Tiempo</small>
+                <strong>{{ match_query.processing_time|floatformat:1 }}s</strong>
+                <span class="opacity-75 small">procesamiento</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="card glass-card h-100">
+            <div class="card-body">
+                <h5 class="section-title mb-3">
+                    <span class="panel-icon"><i class="fas fa-clipboard-list"></i></span>
+                    Descripción del puesto
+                </h5>
+
+                <div class="description-box">
+                    {{ match_query.job_description|linebreaks }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="metric-card">
+            <span class="metric-label">Fecha</span>
+            <div class="metric-value">{{ match_query.created_at|date:"d/m/Y H:i" }}</div>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Perfiles evaluados</span>
+            <div class="metric-value">{{ match_query.get_cvs_count }}</div>
+        </div>
+
+        {% if match_query.processing_time %}
+        <div class="metric-card">
+            <span class="metric-label">Tiempo de procesamiento</span>
+            <div class="metric-value">{{ match_query.processing_time|floatformat:1 }} segundos</div>
+        </div>
+        {% endif %}
+
+        <div class="quick-guide mt-3">
+            <strong><i class="fas fa-info-circle me-1"></i>Lectura rápida</strong><br>
+            <small>Revisá score, fortalezas, gaps y evidencia antes de pasar candidatos a entrevista.</small>
+        </div>
+    </div>
+</div>
+
+<div class="card glass-card mb-4">
+    <div class="card-body">
+        <h5 class="section-title mb-3">
+            <span class="panel-icon"><i class="fas fa-users"></i></span>
+            Perfiles incluidos
+        </h5>
+
+        <div>
+            {% for cv in cvs_analyzed %}
+                <span class="candidate-pill">
+                    <i class="fas fa-user-check"></i>
+                    {{ cv.candidate_name }}
+                    <a href="{% url 'cv_detail' cv.id %}" title="Ver perfil">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="result-shell">
+    <div class="result-header">
+        <div class="result-header-left">
+            <div class="result-mark">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+                <h4 class="section-title mb-1">Resultado del matching IA</h4>
+                <small class="text-muted">Ranking, fortalezas, gaps y evidencia detectada.</small>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-outline-secondary btn-sm no-print" onclick="copyMatchingResult()">
+            <i class="fas fa-copy me-1"></i>Copiar
+        </button>
+    </div>
+
+    <div class="result-body">
+        <div id="matching-result-text" class="analysis-response">
+            {{ match_query.response|linebreaks }}
+        </div>
+    </div>
+</div>
+
+<div class="card action-card mt-4 no-print">
+    <div class="card-body">
+        <h6 class="section-title mb-3">
+            <i class="fas fa-bolt me-2 text-primary"></i>Acciones rápidas
+        </h6>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'job_match' %}" class="btn btn-primary btn-soft">
+                <i class="fas fa-plus me-1"></i>Nuevo matching
+            </a>
+
+            <button type="button" class="btn btn-outline-secondary btn-soft" onclick="window.print()">
+                <i class="fas fa-print me-1"></i>Exportar / imprimir
+            </button>
+
+            <a href="{% url 'selection_kanban' %}" class="btn btn-outline-primary btn-soft">
+                <i class="fas fa-columns me-1"></i>Ir al pipeline
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyMatchingResult() {
+    const text = document.querySelector('#matching-result-text').innerText;
+
+    navigator.clipboard.writeText(text).then(function () {
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success position-fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '9999';
+        toast.style.borderRadius = '14px';
+        toast.innerHTML = '<i class="fas fa-check me-2"></i>Resultado copiado correctamente';
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 2500);
+    });
+}
+</script>
+{% endblock %}
