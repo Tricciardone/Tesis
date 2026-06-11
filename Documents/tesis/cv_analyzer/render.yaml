@@ -33,6 +33,12 @@ services:
         value: "False"
       - key: CORS_ALLOW_ALL_ORIGINS
         value: "False"
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: "admin"
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: "admin@example.com"
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
       - key: GUNICORN_WORKERS
         value: "2"
       - key: GUNICORN_TIMEOUT

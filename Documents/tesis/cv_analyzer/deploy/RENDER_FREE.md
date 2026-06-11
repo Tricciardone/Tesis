@@ -42,17 +42,22 @@ Si vas a usar OpenAI, agregá manualmente:
 OPENAI_API_KEY=tu_api_key
 ```
 
-## 4. Crear admin
+## 4. Crear admin sin Shell
 
-En Render:
+Render Free no incluye Shell. Para crear el admin:
 
 1. Abrí el servicio `talentscan-ia`.
-2. Shell.
-3. Ejecutá:
+2. Environment.
+3. Agregá o editá:
 
-```bash
-python manage.py createsuperuser
+```text
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=tu-email@example.com
+DJANGO_SUPERUSER_PASSWORD=una-clave-segura
 ```
+
+4. Manual Deploy > Deploy latest commit.
+5. Al arrancar, el sistema crea o actualiza ese superusuario automáticamente.
 
 Después entrás en:
 
