@@ -6,11 +6,16 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
+from django.core.files.storage import storages
 from django.views.generic import RedirectView
 
 
 def healthz(request):
-    return JsonResponse({'status': 'ok'})
+    return JsonResponse({
+        'status': 'ok',
+        'storage_default': 'default' in storages.backends,
+        'storage_staticfiles': 'staticfiles' in storages.backends,
+    })
 
 urlpatterns = [
     path('healthz/', healthz, name='healthz'),
