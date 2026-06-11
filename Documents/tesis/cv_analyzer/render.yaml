@@ -9,8 +9,8 @@ services:
     name: talentscan-ia
     runtime: python
     plan: free
-    buildCommand: ./deploy/render_build.sh
-    startCommand: ./deploy/render_start.sh
+    buildCommand: bash deploy/render_build.sh
+    startCommand: bash deploy/render_start.sh
     healthCheckPath: /healthz/
     envVars:
       - key: PYTHON_VERSION
