@@ -963,7 +963,7 @@ def ollama_status(request):
 
         return JsonResponse({
             'connected': connected,
-            'target_model': 'gpt-4o-mini'
+            'target_model': 'OpenAI gpt-4o-mini'
         })
 
     except Exception as e:
@@ -971,7 +971,7 @@ def ollama_status(request):
 
         return JsonResponse({
             'connected': False,
-            'target_model': 'gpt-4o-mini'
+            'target_model': 'OpenAI gpt-4o-mini'
         })
 
 

@@ -272,6 +272,10 @@ class OllamaService:
         self.model = "gpt-4o-mini"
 
     def check_connection(self):
+        if not settings.OPENAI_API_KEY:
+            logger.error("OPENAI_API_KEY no configurada.")
+            return False
+
         try:
             self.client.models.list()
             return True
