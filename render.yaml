@@ -1,7 +1,7 @@
 databases:
   - name: talentscan-db
     plan: free
-    databaseName: cv_analyzer
+    databaseName: talentscan
     user: talentscan
 
 services:
@@ -9,7 +9,7 @@ services:
     name: talentscan-ia
     runtime: python
     plan: free
-    rootDir: Documents/tesis/cv_analyzer
+    rootDir: Documents/tesis/TalentScanIA
     buildCommand: bash deploy/render_build.sh
     startCommand: bash deploy/render_start.sh
     healthCheckPath: /healthz/

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Iniciando sistema CV Analyzer..."
+echo "Iniciando sistema TalentScan IA..."
 
 # Esperar a que Ollama esté disponible
 echo "⏳ Esperando que Ollama esté disponible..."

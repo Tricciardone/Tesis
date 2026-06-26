@@ -1,5 +1,5 @@
 """
-URL configuration for cv_analyzer_project project.
+URL configuration for TalentScan IA.
 """
 from django.contrib import admin
 from django.urls import path, include
@@ -16,6 +16,7 @@ def healthz(request):
         'storage_default': 'default' in storages.backends,
         'storage_staticfiles': 'staticfiles' in storages.backends,
     })
+
 
 urlpatterns = [
     path('healthz/', healthz, name='healthz'),

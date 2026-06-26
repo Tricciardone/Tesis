@@ -1,7 +1,7 @@
 databases:
   - name: talentscan-db
     plan: free
-    databaseName: cv_analyzer
+    databaseName: talentscan
     user: talentscan
 
 services:

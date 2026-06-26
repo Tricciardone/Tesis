@@ -1,5 +1,5 @@
 """
-Django settings for cv_analyzer_project project.
+Django settings for TalentScan IA.
 """
 
 from pathlib import Path
@@ -17,7 +17,7 @@ def csv_config(name, default=""):
         if item.strip()
     ]
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings
@@ -28,7 +28,7 @@ ALLOWED_HOSTS = csv_config('ALLOWED_HOSTS', default='localhost,127.0.0.1')
 CSRF_TRUSTED_ORIGINS = csv_config('CSRF_TRUSTED_ORIGINS')
 
 if not DEBUG and SECRET_KEY.startswith('django-insecure'):
-    raise RuntimeError('SECRET_KEY insegura: configurá una SECRET_KEY real antes de publicar.')
+    raise RuntimeError('SECRET_KEY insegura: configura una SECRET_KEY real antes de publicar.')
 
 # Application definition
 DJANGO_APPS = [
@@ -66,7 +66,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'cv_analyzer_project.urls'
+ROOT_URLCONF = 'talentscan_project.urls'
 
 TEMPLATES = [
     {
@@ -85,7 +85,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'cv_analyzer_project.wsgi.application'
+WSGI_APPLICATION = 'talentscan_project.wsgi.application'
 
 # Database
 if config('DATABASE_URL', default=''):
@@ -100,7 +100,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='cv_analyzer'),
+            'NAME': config('DB_NAME', default='talentscan'),
             'USER': config('DB_USER', default='postgres'),
             'PASSWORD': config('DB_PASSWORD', default='postgres123'),
             'HOST': config('DB_HOST', default='postgres'),
@@ -190,7 +190,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', defaul
 SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=not DEBUG, cast=bool)
 ALLOW_PUBLIC_REGISTRATION = config('ALLOW_PUBLIC_REGISTRATION', default=DEBUG, cast=bool)
 
-# Ollama settings
+# Optional local IA service URL kept for compatibility with existing environments.
 OLLAMA_URL = config('OLLAMA_URL', default='http://ollama:11434')
 
 # File upload settings

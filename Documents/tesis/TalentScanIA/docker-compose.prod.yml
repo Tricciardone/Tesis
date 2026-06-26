@@ -1,3 +1,5 @@
+name: talentscan
+
 services:
   postgres:
     image: postgres:15
@@ -20,11 +22,11 @@ services:
     build: .
     restart: unless-stopped
     env_file:
-      - .env.production
+      - ${TALENTSCAN_ENV_FILE:-.env.production}
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn cv_analyzer_project.wsgi:application
+             gunicorn talentscan_project.wsgi:application
              --bind 0.0.0.0:8000
              --workers ${GUNICORN_WORKERS:-3}
              --timeout ${GUNICORN_TIMEOUT:-120}
@@ -43,7 +45,7 @@ services:
     image: caddy:2.8
     restart: unless-stopped
     env_file:
-      - .env.production
+      - ${TALENTSCAN_ENV_FILE:-.env.production}
     ports:
       - "80:80"
       - "443:443"

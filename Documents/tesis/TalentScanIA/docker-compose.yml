@@ -1,10 +1,12 @@
+name: talentscan
+
 services:
   postgres:
     image: postgres:15
-    container_name: cv_analyzer_db
+    container_name: talentscan_db
     restart: always
     environment:
-      POSTGRES_DB: cv_analyzer
+      POSTGRES_DB: talentscan
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     ports:
@@ -12,14 +14,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d cv_analyzer"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d talentscan"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   web:
     build: .
-    container_name: cv_analyzer_web
+    container_name: talentscan_web
     restart: always
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
@@ -33,7 +35,7 @@ services:
     environment:
       SECRET_KEY: ${SECRET_KEY:-django-insecure-local-dev-key}
       DEBUG: ${DEBUG:-True}
-      DB_NAME: ${DB_NAME:-cv_analyzer}
+      DB_NAME: ${DB_NAME:-talentscan}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres123}
       DB_HOST: ${DB_HOST:-postgres}
